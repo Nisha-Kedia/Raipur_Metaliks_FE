@@ -71,7 +71,7 @@
 /* About.css - Modern and clean styling for About component */
 
 /* About.css - Unique and distinctive styling */
-
+/* 
 #about {
   display: flex;
   min-height: 100vh;
@@ -80,7 +80,6 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
 }
 
-/* Decorative elements */
 #about::before {
   content: '';
   position: absolute;
@@ -105,7 +104,6 @@
   z-index: 0;
 }
 
-/* Content container */
 .about-container {
   display: flex;
   width: 100%;
@@ -113,7 +111,6 @@
   z-index: 1;
 }
 
-/* Left side with text content */
 .left-side {
   flex: 1;
   padding: 5rem 3rem 5rem 5rem;
@@ -143,14 +140,13 @@
   text-align: left;
 }
 
-/* Company name highlight */
 .left-side p .company-name {
   color: #4a90e2;
   font-weight: 700;
   font-size: 1.2rem;
 }
 
-/* Right side with images */
+
 .right-side {
   flex: 1;
   position: relative;
@@ -205,7 +201,7 @@
   z-index: 3;
 }
 
-/* Highlight section */
+
 .highlight-text {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -215,7 +211,6 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* Responsive styles */
 @media (max-width: 1024px) {
   .left-side {
     padding: 4rem 2rem 4rem 3rem;
@@ -270,5 +265,327 @@
   .right-side .bottom {
     width: 85%;
     height: 250px;
+  }
+} */
+
+#about {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+#about::before {
+  content: '';
+  position: absolute;
+  top: -150px;
+  right: -150px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(74, 144, 226, 0.1), rgba(74, 144, 226, 0.2));
+  z-index: 0;
+}
+
+#about::after {
+  content: '';
+  position: absolute;
+  bottom: -150px;
+  left: -150px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(74, 144, 226, 0.15), rgba(80, 120, 200, 0.25));
+  z-index: 0;
+}
+
+.about-container {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  z-index: 1;
+}
+
+.left-side {
+  flex: 1;
+  padding: 5rem 3rem 5rem 5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.left-side::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 70%;
+  background: linear-gradient(to bottom, #1DA1F2, #2c5282);
+  border-radius: 0 4px 4px 0;
+}
+
+.left-side p {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #2d3748;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.left-side p .company-name {
+  color: #4a90e2;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.right-side {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.right-side .image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 550px;
+}
+
+.right-side .top {
+  position: absolute;
+  width: 70%;
+  height: 60%;
+  object-fit: cover;
+  top: 0;
+  right: 0;
+  border-radius: 10px;
+  box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2;
+  transform: rotate(3deg);
+}
+
+.right-side .bottom {
+  position: absolute;
+  width: 70%;
+  height: 60%;
+  object-fit: cover;
+  bottom: 0;
+  left: 0;
+  border-radius: 10px;
+  box-shadow: 15px 15px 30px rgba(0, 0, 0, 0.15);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1;
+  transform: rotate(-3deg);
+}
+
+.right-side .top:hover {
+  transform: rotate(0) scale(1.05);
+  z-index: 3;
+}
+
+.right-side .bottom:hover {
+  transform: rotate(0) scale(1.05);
+  z-index: 3;
+}
+
+.highlight-text {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-left: 4px solid #1DA1F2;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .left-side {
+    padding: 4rem 2rem 4rem 4rem;
+  }
+  
+  .left-side p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .left-side {
+    padding: 4rem 2rem 4rem 3rem;
+  }
+  
+  .right-side .image-container {
+    max-width: 450px;
+  }
+}
+
+@media (max-width: 900px) {
+  #about {
+    min-height: auto;
+    padding: 2rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  #about {
+    flex-direction: column;
+  }
+  
+  #about::before, #about::after {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .about-container {
+    flex-direction: column-reverse;
+  }
+  
+  .left-side {
+    padding: 4rem 2rem 2rem;
+  }
+  
+  .left-side::before {
+    width: 70%;
+    height: 8px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 4px 4px;
+  }
+  
+  .right-side {
+    padding: 3rem 2rem 1rem;
+    height: auto;
+  }
+  
+  .right-side .image-container {
+    height: 400px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    width: 75%;
+    height: 280px;
+  }
+}
+
+@media (max-width: 576px) {
+  #about {
+    padding: 1rem 0;
+  }
+  
+  .left-side {
+    padding: 3rem 1.5rem 2rem;
+  }
+  
+  .left-side p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .left-side p .company-name {
+    font-size: 1.1rem;
+  }
+  
+  .highlight-text {
+    padding: 1.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .right-side {
+    padding: 2rem 1.5rem 1rem;
+  }
+  
+  .right-side .image-container {
+    height: 350px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    width: 85%;
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .right-side .image-container {
+    height: 300px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    height: 180px;
+  }
+  
+  .highlight-text {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .left-side {
+    padding: 2.5rem 1.25rem 1.5rem;
+  }
+  
+  .left-side p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
+  .right-side {
+    padding: 1.5rem 1.25rem 0.5rem;
+  }
+  
+  .right-side .image-container {
+    height: 260px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    width: 90%;
+    height: 160px;
+    transform: rotate(2deg);
+  }
+  
+  .right-side .bottom {
+    transform: rotate(-2deg);
+  }
+}
+
+/* For very small screens like iPhone SE */
+@media (max-width: 320px) {
+  .right-side .image-container {
+    height: 220px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    height: 130px;
+  }
+}
+
+/* Fix for extra tall mobile screens */
+@media (max-height: 700px) and (max-width: 768px) {
+  #about {
+    min-height: auto;
+  }
+  
+  .right-side .image-container {
+    height: 280px;
+  }
+  
+  .right-side .top,
+  .right-side .bottom {
+    height: 180px;
   }
 }
