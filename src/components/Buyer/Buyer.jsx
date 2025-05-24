@@ -21,7 +21,7 @@ export default function Buyer() {
   const fetchBuyers = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8081/api/getbuyers");
+      const response = await fetch("http://raipurmetaliksbackend-production.up.railway.app/api/getbuyers");
       if (!response.ok) {
         throw new Error("Failed to fetch buyers");
       }
@@ -59,7 +59,7 @@ export default function Buyer() {
 
     try {
       // API endpoint matches controller's PostMapping
-      const response = await fetch("http://localhost:8081/api/Buyerform", {
+      const response = await fetch("http://raipurmetaliksbackend-production.up.railway.app/api/Buyerform", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

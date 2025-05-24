@@ -25,7 +25,7 @@ export default function Login() {
     try {
       setIsSubmitting(true);
       
-      const response = await fetch('http://localhost:8081/api/login', {
+      const response = await fetch('http://raipurmetaliksbackend-production.up.railway.app/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
