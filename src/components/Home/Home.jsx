@@ -11,12 +11,6 @@ function Home() {
   let ref = useRef(null);
 
   const handleNext =() =>{
-    // if(next==data.length-1)
-    // {
-    //   setNext(0)
-    // }else{
-    // setNext(next+1)
-    // }
     setNext((previousValue)=>{
       if(previousValue==data.length-1)
       {
@@ -49,8 +43,6 @@ function Home() {
         <button onClick={handlePrev}>{"<"}</button>
       </div> 
         <img src= {data[next].download_url} alt="img" />
-        {/* <img src= {img2} alt="img" />
-        <img src= {img3} alt="img" /> */}
         <div className="right-btn">
         <button onClick={handleNext}>{">"}</button>
       </div>

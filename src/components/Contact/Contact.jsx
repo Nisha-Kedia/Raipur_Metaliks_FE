@@ -5,12 +5,14 @@ function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    phoneNo: '',  
     subject: '',
     message: ''
   });
   
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,23 +22,49 @@ function Contact() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically handle the form submission to your backend
-    console.log('Form submitted:', formData);
-    setFormSubmitted(true);
+    setSubmitError(null);
+    setIsSubmitting(true);
     
-    // Reset form after submission (optional)
-    setTimeout(() => {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
+    try {
+      const contactDto = {
+        ...formData,
+        phoneNo: formData.phoneNo ? parseInt(formData.phoneNo, 10) : null
+      };
+      
+      const response = await fetch('http://localhost:8081/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactDto)
       });
-      setFormSubmitted(false);
-    }, 3000);
+      
+      if (!response.ok) {
+        throw new Error('Server responded with status: ${response.status}');
+      }
+      
+      const data = await response.json();
+      console.log('Success:', data);
+      setFormSubmitted(true);
+      
+      setTimeout(() => {
+        setFormData({
+          name: '',
+          email: '',
+          phoneNo: '',
+          subject: '',
+          message: ''
+        });
+        setFormSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitError('Failed to submit form. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,7 +99,7 @@ function Contact() {
             
             <div className="info-item">
               <div className="info-icon">
-                <i className="icon-email">✉️</i>
+                <i className="icon-email">✉</i>
               </div>
               <div className="info-details">
                 <h3>Email Us</h3>
@@ -115,13 +143,14 @@ function Contact() {
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
+                    <label htmlFor="phoneNo">Phone Number</label>
                     <input 
                       type="tel" 
-                      id="phone" 
-                      name="phone" 
-                      value={formData.phone}
+                      id="phoneNo" 
+                      name="phoneNo" 
+                      value={formData.phoneNo}
                       onChange={handleChange}
+                      placeholder="e.g., 9876543210"
                     />
                   </div>
                 </div>
@@ -150,7 +179,15 @@ function Contact() {
                   ></textarea>
                 </div>
                 
-                <button type="submit" className="submit-btn">Send Message</button>
+                {submitError && <div className="error-message">{submitError}</div>}
+                
+                <button 
+                  type="submit" 
+                  className="submit-btn" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </button>
               </form>
             )}
           </div>

@@ -1,0 +1,121 @@
+.product-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 15px;
+  }
+  
+  .product-header h1 {
+    font-size: 32px;
+    color: #333;
+    margin: 0;
+  }
+  
+  .back-button {
+    display: inline-block;
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+  
+  .back-button:hover {
+    background-color: #1a252f;
+  }
+  
+  .product-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .product-image {
+    flex: 1;
+    max-width: 100%;
+  }
+  
+  .product-image img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-info {
+    flex: 2;
+  }
+  
+  .product-section {
+    margin-bottom: 25px;
+  }
+  
+  .product-section h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .product-section p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  .product-section ul {
+    padding-left: 20px;
+    margin: 0;
+  }
+  
+  .product-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  
+  .product-not-found {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  
+  .product-not-found h2 {
+    font-size: 28px;
+    color: #e74c3c;
+    margin-bottom: 20px;
+  }
+  
+  /* Responsive styles */
+  @media (min-width: 768px) {
+    .product-content {
+      flex-direction: row;
+    }
+    
+    .product-image {
+      max-width: 40%;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .product-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    
+    .product-image img {
+      max-height: 300px;
+    }
+  }
