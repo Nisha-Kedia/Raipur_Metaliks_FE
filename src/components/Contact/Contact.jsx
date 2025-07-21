@@ -33,7 +33,7 @@ function Contact() {
         phoneNo: formData.phoneNo ? parseInt(formData.phoneNo, 10) : null
       };
       
-      const response = await fetch('http://raipurmetaliksbackend-production.up.railway.app/api/contacts', {
+      const response = await fetch('http://raipurmetaliksbe-production.up.railway.app:8080/api/contacts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
