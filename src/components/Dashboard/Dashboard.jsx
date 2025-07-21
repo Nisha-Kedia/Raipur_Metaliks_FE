@@ -50,7 +50,7 @@ export default function Dashboard() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch('http://localhost:8393/api/metalvsday', {
+      const response = await fetch('http://raipurmetaliksbe-production.up.railway.app:8080/api/metalvsday', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
