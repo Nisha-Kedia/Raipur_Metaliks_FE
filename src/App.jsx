@@ -10,6 +10,9 @@ import Login from './components/Login/Login';
 import Welcome from './components/Welcome/Welcome';
 import Chatbot from './components/Chatbot/Chatbot';
 import ProductDetail from './components/ProductDetail/ProductDetail';
+import Dashboard from './components/Dashboard/Dashboard';
+import Buyer from './components/Buyer/Buyer';
+
 
 function App() {
   return (
@@ -26,10 +29,11 @@ function App() {
           </>
         } />
         <Route path="/login" element={<Login />} />
-        <Route path="/welcome" element={<Welcome />} />
+        <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+        <Route path= "/buyer" element={<Buyer/>}/>
+      </Routes> 
       <Chatbot />
     </Router>
   );
