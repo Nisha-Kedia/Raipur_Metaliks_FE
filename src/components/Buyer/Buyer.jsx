@@ -48,7 +48,7 @@ export default function Buyer() {
   const fetchMetalVsDayData = async () => {
     setMetalDataLoading(true);
     try {
-      const response = await fetch("http://localhost:8393/api/getmetalvsday");
+      const response = await fetch("http://raipurmetaliksbe-production.up.railway.app:8080/api/getmetalvsday");
       if (!response.ok) {
         throw new Error("Failed to fetch metal vs day data");
       }
@@ -83,7 +83,7 @@ export default function Buyer() {
     };
 
     try {
-      const response = await fetch("http://localhost:8393/api/Buyerform", {
+      const response = await fetch("http://raipurmetaliksbe-production.up.railway.app:8080/api/Buyerform", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
