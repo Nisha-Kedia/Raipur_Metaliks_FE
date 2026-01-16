@@ -12,6 +12,7 @@ import Chatbot from './components/Chatbot/Chatbot';
 import ProductDetail from './components/ProductDetail/ProductDetail';
 import Dashboard from './components/Dashboard/Dashboard';
 import Buyer from './components/Buyer/Buyer';
+import Deal from './components/Deal/Deal';
 
 
 function App() {
@@ -31,9 +32,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/buyer" element={<Buyer />} />
+        <Route path="/deal" element={<Deal />} />
         <Route path="*" element={<Navigate to="/" />} />
-        <Route path= "/buyer" element={<Buyer/>}/>
-      </Routes> 
+      </Routes>
       <Chatbot />
     </Router>
   );

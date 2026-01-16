@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 import './Login.css';
 
 export default function Login() {
@@ -25,15 +26,9 @@ export default function Login() {
     try {
       setIsSubmitting(true);
       
-      const response = await fetch('http://raipurmetaliksbe-production.up.railway.app:8080/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
+      const response = await authAPI.login({
+        username: username,
+        password: password
       });
       
       const data = await response.text();
@@ -62,7 +57,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1 className="login-title">IIIT BHubaneswar</h1>
+        <h1 className="login-title">Login</h1>
         
         {loginSuccess ? (
           <div className="success-message">

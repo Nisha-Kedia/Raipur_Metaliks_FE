@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { metalAPI } from '../../services/api';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -50,16 +51,10 @@ export default function Dashboard() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch('http://raipurmetaliksbe-production.up.railway.app:8080/api/metalvsday', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: date,
-          metalType: metalType,
-          price: parseFloat(price) // Ensure price is sent as a number
-        })
+      const response = await metalAPI.addMetalPrice({
+        date: date,
+        metalType: metalType,
+        price: parseFloat(price) // Ensure price is sent as a number
       });
 
       if (!response.ok) {
@@ -68,22 +63,22 @@ export default function Dashboard() {
         throw new Error(errorData || 'Failed to add record.');
       }
 
-      
+
       // If successful:
       const newRecord = await response.json();
       console.log('Successfully added:', newRecord);
-      
+
       setSuccessMessage(`Record for ${metalType} added successfully!`);
 
       // Clear the form fields for the next entry
       setMetalType('');
       setPrice('');
-      
+
       // Navigate to buyer page after 1.5 seconds
       setTimeout(() => {
         navigate('/buyer');
       }, 1500);
-      
+
     } catch (err) {
       setErrorMessage(err.message || 'An error occurred. Please try again.');
       console.error('Submission error:', err);
@@ -94,13 +89,20 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Data Entry Dashboard</h1>
-        <div className="user-info">
-          <span>Welcome, {username}</span>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard - Welcome, {username}!</h1>
+        <div className="header-buttons">
+          <button onClick={() => navigate('/buyer')} className="nav-btn">
+            Buyer Analytics
+          </button>
+          <button onClick={() => navigate('/deal')} className="nav-btn">
+            Deal Management
+          </button>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
         </div>
-      </header>
+      </div>
 
       <div className="form-card">
         <h2 className="form-title">Add New Metal Price</h2>

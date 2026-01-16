@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Plus, RefreshCcw, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { buyerAPI, metalAPI } from '../../services/api';
 import './Buyer.css'
 
 export default function Buyer() {
@@ -24,14 +25,14 @@ export default function Buyer() {
 
   // Available products
   const products = [
-    "Steel Rods", "Iron Sheets", "Aluminum Pipes", "Copper Wires", 
+    "Steel Rods", "Iron Sheets", "Aluminum Pipes", "Copper Wires",
     "Brass Fittings", "Stainless Steel", "Galvanized Steel", "Carbon Steel"
   ];
 
   const fetchBuyers = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://raipurmetaliksbe-production.up.railway.app:8080/api/getbuyers");
+      const response = await buyerAPI.getBuyers();
       if (!response.ok) {
         throw new Error("Failed to fetch buyers");
       }
@@ -48,7 +49,7 @@ export default function Buyer() {
   const fetchMetalVsDayData = async () => {
     setMetalDataLoading(true);
     try {
-      const response = await fetch("http://raipurmetaliksbe-production.up.railway.app:8080/api/getmetalvsday");
+      const response = await metalAPI.getMetalVsDay();
       if (!response.ok) {
         throw new Error("Failed to fetch metal vs day data");
       }
@@ -74,7 +75,7 @@ export default function Buyer() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    
+
     const submissionData = {
       ...formData,
       phoneNo: formData.phoneNo ? parseInt(formData.phoneNo, 10) : null,
@@ -83,13 +84,7 @@ export default function Buyer() {
     };
 
     try {
-      const response = await fetch("http://raipurmetaliksbe-production.up.railway.app:8080/api/Buyerform", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submissionData),
-      });
+      const response = await buyerAPI.addBuyer(submissionData);
 
       if (!response.ok) {
         throw new Error("Failed to submit buyer data");
@@ -97,7 +92,7 @@ export default function Buyer() {
 
       setFormSuccess(true);
       setTimeout(() => setFormSuccess(false), 3000);
-      
+
       setFormData({
         name: "",
         phoneNo: "",
@@ -137,7 +132,7 @@ export default function Buyer() {
     }
 
     // Filter data for the selected metal type
-    const filteredData = metalVsDayData.filter(item => 
+    const filteredData = metalVsDayData.filter(item =>
       item.metalType === product
     );
 
@@ -157,7 +152,7 @@ export default function Buyer() {
     if (!metalVsDayData || metalVsDayData.length === 0) {
       return products; // Fallback to default products
     }
-    
+
     const uniqueTypes = [...new Set(metalVsDayData.map(item => item.metalType))];
     return uniqueTypes.length > 0 ? uniqueTypes : products;
   }, [metalVsDayData]);
@@ -172,7 +167,7 @@ export default function Buyer() {
   // Price vs Date Chart Configuration
   const priceChartOptions = useMemo(() => {
     const priceData = getProcessedPriceData(selectedProduct);
-    
+
     return {
       chart: {
         type: 'line',
@@ -224,7 +219,7 @@ export default function Buyer() {
           style: {
             color: '#2c3e50'
           },
-          formatter: function() {
+          formatter: function () {
             return '₹' + (this.value >= 1000 ? (this.value / 1000).toFixed(0) + 'k' : this.value);
           }
         },
@@ -235,7 +230,7 @@ export default function Buyer() {
         borderColor: '#dee2e6',
         borderRadius: 8,
         shadow: true,
-        formatter: function() {
+        formatter: function () {
           return `<b>${selectedProduct}</b><br/>
                   Date: ${Highcharts.dateFormat('%e %b %Y', this.x)}<br/>
                   Price: ₹${this.y.toLocaleString()}`;
@@ -349,7 +344,7 @@ export default function Buyer() {
         borderColor: '#dee2e6',
         borderRadius: 8,
         shadow: true,
-        formatter: function() {
+        formatter: function () {
           return `<b>${this.point.category}</b><br/>
                   Quantity: <b>${this.y}</b> units`;
         }
@@ -617,7 +612,7 @@ export default function Buyer() {
                     <td className="table-cell">{buyer.product}</td>
                     <td className="table-cell">{buyer.quantity}</td>
                     <td className="table-cell">
-                      ₹ {buyer.price}   
+                      ₹ {buyer.price}
                     </td>
                     <td className="table-cell">
                       <span className={getStatusBadge(buyer.status)}>
