@@ -26,8 +26,6 @@ export default function Deal() {
         material: '',
         price: '',
         dealQuantity: '',
-        difference: '',
-        actualQuantity: '',
         truckDeliveries: [{ truckNumber: 'Truck 1', deliveryDate: '', quantity: '' }]
     });
 
@@ -131,6 +129,19 @@ export default function Deal() {
     const handleTruckChange = (index, field, value) => {
         const newTrucks = [...formData.truckDeliveries];
         newTrucks[index][field] = value;
+
+        // Validate quantity in real-time
+        if (field === 'quantity' && formData.dealQuantity) {
+            const totalDelivered = newTrucks.reduce((sum, truck, idx) => {
+                return sum + (idx === index ? parseInt(value) || 0 : parseInt(truck.quantity) || 0);
+            }, 0);
+
+            if (totalDelivered > parseInt(formData.dealQuantity)) {
+                alert(`Total truck quantity (${totalDelivered}) cannot exceed deal quantity (${formData.dealQuantity}). Remaining: ${formData.dealQuantity - (totalDelivered - (parseInt(value) || 0))}`);
+                return;
+            }
+        }
+
         setFormData(prev => ({
             ...prev,
             truckDeliveries: newTrucks
@@ -149,13 +160,13 @@ export default function Deal() {
                 return sum + (idx === index ? parseInt(value) || 0 : truck.quantity || 0);
             }, 0);
 
-            if (totalDelivered > editingDeal.actualQuantity) {
-                alert(`Total quantity cannot exceed actual quantity (${editingDeal.actualQuantity}). Remaining: ${editingDeal.actualQuantity - (totalDelivered - (parseInt(value) || 0))}`);
+            if (totalDelivered > editingDeal.saudaQuantity) {
+                alert(`Total quantity cannot exceed deal quantity (${editingDeal.saudaQuantity}). Remaining: ${editingDeal.saudaQuantity - (totalDelivered - (parseInt(value) || 0))}`);
                 return;
             }
 
-            // Update difference automatically
-            editingDeal.difference = editingDeal.actualQuantity - totalDelivered;
+            // Update difference automatically (always positive: dealQty - truckQty)
+            editingDeal.difference = editingDeal.saudaQuantity - totalDelivered;
         }
 
         setEditingDeal(prev => ({
@@ -199,7 +210,7 @@ export default function Deal() {
         setEditingDeal(prev => ({
             ...prev,
             truckDeliveries: newTrucks,
-            difference: prev.actualQuantity - totalDelivered
+            difference: prev.saudaQuantity - totalDelivered
         }));
     };
 
@@ -264,8 +275,6 @@ export default function Deal() {
             material: formData.material,
             price: parseFloat(formData.price),
             saudaQuantity: parseInt(formData.dealQuantity),
-            difference: parseInt(formData.difference),
-            actualQuantity: parseInt(formData.actualQuantity),
             truckDeliveries: formData.truckDeliveries.map(truck => ({
                 truckNumber: truck.truckNumber,
                 deliveryDate: truck.deliveryDate,
@@ -292,8 +301,6 @@ export default function Deal() {
                     material: '',
                     price: '',
                     dealQuantity: '',
-                    difference: '',
-                    actualQuantity: '',
                     truckDeliveries: [{ truckNumber: 'Truck 1', deliveryDate: '', quantity: '' }]
                 });
                 fetchDeals();
@@ -315,8 +322,7 @@ export default function Deal() {
                 'Material': deal.material,
                 'Price': deal.price,
                 'Deal Quantity': deal.saudaQuantity,
-                'Difference': deal.difference,
-                'Actual Quantity': deal.actualQuantity
+                'Difference': deal.difference
             };
 
             // Add truck columns
@@ -530,32 +536,6 @@ export default function Deal() {
                                     required
                                 />
                             </div>
-
-                            <div className="form-group">
-                                <label className="form-label">Difference</label>
-                                <input
-                                    type="number"
-                                    name="difference"
-                                    value={formData.difference}
-                                    onChange={handleInputChange}
-                                    className="form-input"
-                                    placeholder="0"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label className="form-label">Actual Quantity</label>
-                                <input
-                                    type="number"
-                                    name="actualQuantity"
-                                    value={formData.actualQuantity}
-                                    onChange={handleInputChange}
-                                    className="form-input"
-                                    placeholder="100"
-                                    required
-                                />
-                            </div>
                         </div>
 
                         <div className="truck-section">
@@ -651,7 +631,6 @@ export default function Deal() {
                                     <th className="table-cell">Price</th>
                                     <th className="table-cell">deal Qty</th>
                                     <th className="table-cell">Difference</th>
-                                    <th className="table-cell">Actual Qty</th>
                                     <th className="table-cell">Trucks</th>
                                     <th className="table-cell">Actions</th>
                                 </tr>
@@ -666,7 +645,6 @@ export default function Deal() {
                                         <td className="table-cell">₹ {deal.price?.toLocaleString()}</td>
                                         <td className="table-cell">{deal.saudaQuantity}</td>
                                         <td className="table-cell">{deal.difference}</td>
-                                        <td className="table-cell">{deal.actualQuantity}</td>
                                         <td className="table-cell">
                                             <div className="truck-info">
                                                 {deal.truckDeliveries?.map((truck, idx) => (
@@ -730,10 +708,6 @@ export default function Deal() {
                                     <input type="text" value={editingDeal.saudaQuantity} className="form-input" disabled />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Actual Quantity</label>
-                                    <input type="text" value={editingDeal.actualQuantity} className="form-input" disabled />
-                                </div>
-                                <div className="form-group">
                                     <label className="form-label">Difference (Auto-calculated)</label>
                                     <input type="text" value={editingDeal.difference} className="form-input" disabled />
                                 </div>
@@ -748,7 +722,7 @@ export default function Deal() {
                                     </button>
                                 </div>
                                 {/* <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f9ff', border: '1px solid #0284c7', borderRadius: '4px' }}>
-                                    <strong>Remaining Quantity:</strong> {editingDeal.actualQuantity - editingDeal.truckDeliveries.reduce((sum, t) => sum + (t.quantity || 0), 0)}
+                                    <strong>Remaining Quantity:</strong> {editingDeal.saudaQuantity - editingDeal.truckDeliveries.reduce((sum, t) => sum + (t.quantity || 0), 0)}
                                 </div> */}
 
                                 {editingDeal.truckDeliveries.map((truck, index) => (
