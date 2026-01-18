@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Download, RefreshCcw, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Download, RefreshCcw, ArrowLeft, Edit, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import './Deal.css';
 import { API_BASE_URL } from '../../config';
@@ -8,8 +8,17 @@ import { API_BASE_URL } from '../../config';
 export default function Deal() {
     const navigate = useNavigate();
     const [deals, setDeals] = useState([]);
+    const [filteredDeals, setFilteredDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingDeal, setEditingDeal] = useState(null);
+    const [sellers, setSellers] = useState([]);
+    const [filters, setFilters] = useState({
+        seller: '',
+        month: '',
+        year: new Date().getFullYear().toString()
+    });
     const [formData, setFormData] = useState({
         dealDate: new Date().toISOString().split('T')[0],
         sellerName: '',
@@ -39,6 +48,7 @@ export default function Deal() {
 
     useEffect(() => {
         fetchDeals();
+        fetchSellers();
     }, []);
 
     const fetchDeals = async () => {
@@ -48,6 +58,7 @@ export default function Deal() {
             if (response.ok) {
                 const data = await response.json();
                 setDeals(data);
+                setFilteredDeals(data);
             }
         } catch (error) {
             console.error('Error fetching deals:', error);
@@ -55,6 +66,59 @@ export default function Deal() {
             setLoading(false);
         }
     };
+
+    const fetchSellers = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/sauda/sellers`);
+            if (response.ok) {
+                const data = await response.json();
+                setSellers(data);
+            }
+        } catch (error) {
+            console.error('Error fetching sellers:', error);
+        }
+    };
+
+    const applyFilters = async () => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (filters.seller) params.append('seller', filters.seller);
+            if (filters.year && filters.month) {
+                params.append('year', filters.year);
+                params.append('month', filters.month);
+            }
+
+            const url = `${API_BASE_URL}/api/sauda/filter${params.toString() ? '?' + params.toString() : ''}`;
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                setFilteredDeals(data);
+            }
+        } catch (error) {
+            console.error('Error applying filters:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const clearFilters = () => {
+        setFilters({ seller: '', month: '', year: new Date().getFullYear().toString() });
+        setFilteredDeals(deals);
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    useEffect(() => {
+        if (filters.seller || (filters.year && filters.month)) {
+            applyFilters();
+        } else {
+            setFilteredDeals(deals);
+        }
+    }, [filters]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -73,9 +137,45 @@ export default function Deal() {
         }));
     };
 
+    const handleEditTruckChange = (index, field, value) => {
+        if (!editingDeal) return;
+
+        const newTrucks = [...editingDeal.truckDeliveries];
+        newTrucks[index][field] = value;
+
+        // Validate quantity
+        if (field === 'quantity') {
+            const totalDelivered = newTrucks.reduce((sum, truck, idx) => {
+                return sum + (idx === index ? parseInt(value) || 0 : truck.quantity || 0);
+            }, 0);
+
+            if (totalDelivered > editingDeal.actualQuantity) {
+                alert(`Total quantity cannot exceed actual quantity (${editingDeal.actualQuantity}). Remaining: ${editingDeal.actualQuantity - (totalDelivered - (parseInt(value) || 0))}`);
+                return;
+            }
+
+            // Update difference automatically
+            editingDeal.difference = editingDeal.actualQuantity - totalDelivered;
+        }
+
+        setEditingDeal(prev => ({
+            ...prev,
+            truckDeliveries: newTrucks
+        }));
+    };
+
     const addTruck = () => {
         const truckNumber = `Truck ${formData.truckDeliveries.length + 1}`;
         setFormData(prev => ({
+            ...prev,
+            truckDeliveries: [...prev.truckDeliveries, { truckNumber, deliveryDate: '', quantity: '' }]
+        }));
+    };
+
+    const addEditTruck = () => {
+        if (!editingDeal) return;
+        const truckNumber = `Truck ${editingDeal.truckDeliveries.length + 1}`;
+        setEditingDeal(prev => ({
             ...prev,
             truckDeliveries: [...prev.truckDeliveries, { truckNumber, deliveryDate: '', quantity: '' }]
         }));
@@ -87,6 +187,70 @@ export default function Deal() {
                 ...prev,
                 truckDeliveries: prev.truckDeliveries.filter((_, i) => i !== index)
             }));
+        }
+    };
+
+    const removeEditTruck = (index) => {
+        if (!editingDeal || editingDeal.truckDeliveries.length <= 1) return;
+
+        const newTrucks = editingDeal.truckDeliveries.filter((_, i) => i !== index);
+        const totalDelivered = newTrucks.reduce((sum, truck) => sum + (truck.quantity || 0), 0);
+
+        setEditingDeal(prev => ({
+            ...prev,
+            truckDeliveries: newTrucks,
+            difference: prev.actualQuantity - totalDelivered
+        }));
+    };
+
+    const openEditModal = (deal) => {
+        setEditingDeal(JSON.parse(JSON.stringify(deal))); // Deep copy
+        setShowEditModal(true);
+    };
+
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        setEditingDeal(null);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+
+        const payload = {
+            saudaDate: editingDeal.saudaDate,
+            sellerName: editingDeal.sellerName,
+            buyerName: editingDeal.buyerName,
+            material: editingDeal.material,
+            price: editingDeal.price,
+            saudaQuantity: editingDeal.saudaQuantity,
+            difference: editingDeal.difference,
+            actualQuantity: editingDeal.actualQuantity,
+            truckDeliveries: editingDeal.truckDeliveries.map(truck => ({
+                truckNumber: truck.truckNumber,
+                deliveryDate: truck.deliveryDate,
+                quantity: parseInt(truck.quantity) || 0
+            }))
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/sauda/${editingDeal.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert('Deal updated successfully!');
+                closeEditModal();
+                fetchDeals();
+            } else {
+                alert('Failed to update deal');
+            }
+        } catch (error) {
+            console.error('Error updating deal:', error);
+            alert('Error updating deal');
         }
     };
 
@@ -143,7 +307,7 @@ export default function Deal() {
     };
 
     const exportToExcel = () => {
-        const exportData = deals.map(deal => {
+        const exportData = filteredDeals.map(deal => {
             const row = {
                 'Deal Date': new Date(deal.saudaDate).toLocaleDateString(),
                 'Seller Name': deal.sellerName,
@@ -198,6 +362,86 @@ export default function Deal() {
                         <Plus size={16} />
                         <span>{showForm ? 'Hide Form' : 'Add deal'}</span>
                     </button>
+                </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="deal-filters" style={{
+                background: 'white',
+                padding: '20px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                display: 'flex',
+                gap: '15px',
+                alignItems: 'flex-end',
+                flexWrap: 'wrap'
+            }}>
+                <div className="form-group" style={{ marginBottom: 0, minWidth: '200px' }}>
+                    <label className="form-label">Filter by Seller</label>
+                    <select
+                        name="seller"
+                        value={filters.seller}
+                        onChange={handleFilterChange}
+                        className="form-select"
+                    >
+                        <option value="">All Sellers</option>
+                        {sellers.map(seller => (
+                            <option key={seller} value={seller}>{seller}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0, minWidth: '150px' }}>
+                    <label className="form-label">Filter by Month</label>
+                    <select
+                        name="month"
+                        value={filters.month}
+                        onChange={handleFilterChange}
+                        className="form-select"
+                    >
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0, minWidth: '120px' }}>
+                    <label className="form-label">Year</label>
+                    <select
+                        name="year"
+                        value={filters.year}
+                        onChange={handleFilterChange}
+                        className="form-select"
+                    >
+                        {[2024, 2025, 2026, 2027].map(year => (
+                            <option key={year} value={year}>{year}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {(filters.seller || filters.month) && (
+                    <button
+                        onClick={clearFilters}
+                        className="btn btn-secondary btn-sm"
+                        style={{ marginBottom: 0 }}
+                    >
+                        <X size={16} />
+                        <span>Clear Filters</span>
+                    </button>
+                )}
+
+                <div style={{ marginLeft: 'auto', color: '#666', fontSize: '14px', alignSelf: 'center' }}>
+                    Showing {filteredDeals.length} of {deals.length} deals
                 </div>
             </div>
 
@@ -409,10 +653,11 @@ export default function Deal() {
                                     <th className="table-cell">Difference</th>
                                     <th className="table-cell">Actual Qty</th>
                                     <th className="table-cell">Trucks</th>
+                                    <th className="table-cell">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="table-body">
-                                {deals.map((deal) => (
+                                {filteredDeals.map((deal) => (
                                     <tr key={deal.id} className="table-row">
                                         <td className="table-cell">{new Date(deal.saudaDate).toLocaleDateString()}</td>
                                         <td className="table-cell">{deal.sellerName}</td>
@@ -431,6 +676,15 @@ export default function Deal() {
                                                 ))}
                                             </div>
                                         </td>
+                                        <td className="table-cell">
+                                            <button
+                                                onClick={() => openEditModal(deal)}
+                                                className="btn btn-primary btn-sm"
+                                                style={{ padding: '5px 10px' }}
+                                            >
+                                                <Edit size={14} />
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -438,6 +692,127 @@ export default function Deal() {
                     </div>
                 )}
             </div>
+
+            {/* Edit Modal */}
+            {showEditModal && editingDeal && (
+                <div className="modal-overlay" onClick={closeEditModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '90vh', overflow: 'auto' }}>
+                        <div className="modal-header">
+                            <h2>Edit Deal - Manage Trucks</h2>
+                            <button onClick={closeEditModal} className="btn btn-icon">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleEditSubmit}>
+                            <div className="form-grid" style={{ marginBottom: '20px' }}>
+                                <div className="form-group">
+                                    <label className="form-label">Deal Date</label>
+                                    <input type="text" value={new Date(editingDeal.saudaDate).toLocaleDateString()} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Seller Name</label>
+                                    <input type="text" value={editingDeal.sellerName} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Buyer Name</label>
+                                    <input type="text" value={editingDeal.buyerName} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Material</label>
+                                    <input type="text" value={editingDeal.material} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Price (₹)</label>
+                                    <input type="text" value={editingDeal.price?.toLocaleString()} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Deal Quantity</label>
+                                    <input type="text" value={editingDeal.saudaQuantity} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Actual Quantity</label>
+                                    <input type="text" value={editingDeal.actualQuantity} className="form-input" disabled />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Difference (Auto-calculated)</label>
+                                    <input type="text" value={editingDeal.difference} className="form-input" disabled />
+                                </div>
+                            </div>
+
+                            <div className="truck-section">
+                                <div className="truck-header">
+                                    <h3>Truck Deliveries</h3>
+                                    <button type="button" onClick={addEditTruck} className="btn btn-sm btn-primary">
+                                        <Plus size={16} />
+                                        <span>Add Truck</span>
+                                    </button>
+                                </div>
+                                {/* <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f9ff', border: '1px solid #0284c7', borderRadius: '4px' }}>
+                                    <strong>Remaining Quantity:</strong> {editingDeal.actualQuantity - editingDeal.truckDeliveries.reduce((sum, t) => sum + (t.quantity || 0), 0)}
+                                </div> */}
+
+                                {editingDeal.truckDeliveries.map((truck, index) => (
+                                    <div key={index} className="truck-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Truck Number</label>
+                                            <input
+                                                type="text"
+                                                value={truck.truckNumber}
+                                                onChange={(e) => handleEditTruckChange(index, 'truckNumber', e.target.value)}
+                                                className="form-input"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Delivery Date</label>
+                                            <input
+                                                type="date"
+                                                value={truck.deliveryDate}
+                                                onChange={(e) => handleEditTruckChange(index, 'deliveryDate', e.target.value)}
+                                                className="form-input"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Quantity</label>
+                                            <input
+                                                type="number"
+                                                value={truck.quantity}
+                                                onChange={(e) => handleEditTruckChange(index, 'quantity', e.target.value)}
+                                                className="form-input"
+                                                placeholder="15"
+                                                required
+                                            />
+                                        </div>
+
+                                        {editingDeal.truckDeliveries.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeEditTruck(index)}
+                                                className="btn btn-danger btn-icon"
+                                                title="Remove Truck"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="form-actions">
+                                <button type="button" onClick={closeEditModal} className="btn btn-secondary">
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
